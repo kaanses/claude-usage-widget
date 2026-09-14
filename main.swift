@@ -28,7 +28,8 @@ func toWindow(_ u: UsageWindow?, length: TimeInterval) -> Window? {
 }
 
 func paceColor(_ level: Int) -> NSColor {
-    [NSColor.systemBlue, .systemCyan, .systemMint, .systemGreen, .systemYellow, .systemOrange, .systemRed][min(max(level, -3), 3) + 3]
+    // Under pace is the alarm (unused allowance is lost at reset), so red sits on the under side.
+    return [NSColor.systemRed, .systemOrange, .systemYellow, .systemGreen, .systemMint, .systemCyan, .systemBlue][min(max(level, -3), 3) + 3]
 }
 
 // One block per day of the weekly window; the dot sits under where usage should be by now.

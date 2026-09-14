@@ -9,3 +9,4 @@
 ## 2026-09-14 — open source
 
 - Git repo, README, MIT license, CLAUDE.md; published to GitHub.
+- Flipped the pace colors: under pace is now red, over pace is blue.

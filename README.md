@@ -10,13 +10,13 @@ No dependencies, no Xcode project — two Swift files compiled with `swiftc`.
 
 | Color | Meaning |
 |---|---|
-| 🔵 blue | way under pace (more than 7 points) — use a lot more |
-| 🩵 cyan | under pace (5–7) |
-| 🌿 mint | slightly under (3–4) |
+| 🔴 red | way under pace (more than 7 points) — use a lot more, it's going to waste |
+| 🟠 orange | under pace (5–7) |
+| 🟡 yellow | slightly under (3–4) |
 | 🟢 green | on track (within 2) |
-| 🟡 yellow | slightly over (3–4) |
-| 🟠 orange | over pace (5–7) |
-| 🔴 red | way over (more than 7) — slow down |
+| 🌿 mint | slightly over (3–4) |
+| 🩵 cyan | over pace (5–7) |
+| 🔵 blue | way over (more than 7) — slow down or you'll run out early |
 
 **Click it:** a larger day bar with a line at exactly where you should be, plus:
 

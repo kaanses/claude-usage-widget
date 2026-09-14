@@ -12,7 +12,7 @@ Weekly only — the 5-hour session limit was deliberately dropped as not useful.
 - `Pace.swift` — pure pacing logic, the only tested code. `main.swift` — status item, icon drawing, popup `WeekView`, fetch.
 - Data: OAuth token from Keychain (`security find-generic-password -s "Claude Code-credentials"`), `GET https://api.anthropic.com/api/oauth/usage` with header `anthropic-beta: oauth-2025-04-20`; uses `seven_day.utilization` and `seven_day.resets_at`.
 - Pace is linear: target = elapsed / window length, where window start = `resets_at − 7d`.
-- `paceLevel` −3…3, bands at 2 / 4 / 7 points off pace; off pace in *either* direction is bad (under = wasted allowance). Colors blue, cyan, mint, green, yellow, orange, red.
+- `paceLevel` −3…3, bands at 2 / 4 / 7 points off pace; off pace in *either* direction is bad (under = wasted allowance). Colors from −3 to +3: red, orange, yellow, green, mint, cyan, blue. Under pace is the alarm (red) because unused allowance is lost at reset — the user was explicit about this.
 - "Left today" = end of today's 1/7 block − used, not distance to current pace.
 - Tests: TDD for `Pace.swift` only; UI is verified by rendering views to PNG, not tested.
 
