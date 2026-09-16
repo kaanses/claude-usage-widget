@@ -24,6 +24,7 @@ No dependencies, no Xcode project — two Swift files compiled with `swiftc`.
 - **Left today** — how much you can use before passing the end of today's 1/7 slice
 - **Daily budget** — what's left divided by the days remaining
 - **Resets** — when the weekly window resets
+- **Session** — how much of your current 5-hour session limit is gone, and when it resets. Neutral until 75%, orange to 90%, red above. It's a fuel gauge, not a pace: nobody spreads a session evenly across five hours.
 
 "Pace" is linear: with 3 of 7 days elapsed, you should be at ~43%.
 
@@ -58,7 +59,7 @@ The first launch may ask for Keychain access — choose **Always Allow**.
 swiftc tests/main.swift Pace.swift -o /tmp/pace-tests && /tmp/pace-tests
 ```
 
-- `Pace.swift` — pacing math (target %, pace level, left today, daily budget). Tested.
+- `Pace.swift` — pacing math (target %, pace level, left today, daily budget) and `sessionLevel`. Tested.
 - `main.swift` — menu bar item, icon drawing, popup view, API fetch.
 - `tests/main.swift` — plain assertion tests, no framework needed.
 

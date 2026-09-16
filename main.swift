@@ -1,7 +1,7 @@
 import AppKit
 
 struct UsageWindow: Decodable { let utilization: Double; let resets_at: String? }
-struct Usage: Decodable { let seven_day: UsageWindow? }
+struct Usage: Decodable { let seven_day: UsageWindow?; let five_hour: UsageWindow? }
 
 func readToken() -> String? {
     let p = Process(), out = Pipe()
@@ -59,13 +59,16 @@ func weekBlocks(used: Double, target: Double, level: Int) -> NSImage {
     return img
 }
 
+// Separate from paceColor on purpose: the 7-colour pace scale means "the week" and nothing else.
+func sessionColor(_ level: Int) -> NSColor { [NSColor.labelColor, .systemOrange, .systemRed][level] }
+
 let statusText = ["Way under pace", "Under pace", "Slightly under pace", "On track", "Slightly over pace", "Over pace", "Way over pace"]
 
 final class WeekView: NSView {
-    let w: Window, now: Date
-    init(_ w: Window, now: Date) {
-        self.w = w; self.now = now
-        super.init(frame: NSRect(x: 0, y: 0, width: 280, height: 196))
+    let w: Window, session: Window?, now: Date
+    init(_ w: Window, session: Window?, now: Date) {
+        self.w = w; self.session = session; self.now = now
+        super.init(frame: NSRect(x: 0, y: 0, width: 280, height: session == nil ? 196 : 260))
     }
     required init?(coder: NSCoder) { nil }
 
@@ -74,7 +77,37 @@ final class WeekView: NSView {
         a.draw(at: NSPoint(x: right ? x - a.size().width : x, y: y))
     }
 
+    // The session strip owns the bottom 64pt; the week is drawn in its original coordinates, shifted up over it.
     override func draw(_: NSRect) {
+        session.map(drawSession)
+        NSGraphicsContext.saveGraphicsState()
+        if session != nil { NSAffineTransform(transform: AffineTransform(translationByX: 0, byY: 64)).concat() }
+        drawWeek()
+        NSGraphicsContext.restoreGraphicsState()
+    }
+
+    func drawSession(_ s: Window) {
+        let L: CGFloat = 16, R = bounds.width - 16
+        let color = sessionColor(sessionLevel(s.used))
+        let clock = DateFormatter(); clock.dateFormat = "HH:mm"
+
+        NSColor.labelColor.withAlphaComponent(0.12).setFill()
+        NSRect(x: L, y: 66, width: R - L, height: 1).fill()
+        text("SESSION", 9.5, .secondaryLabelColor, L, 48, .semibold)
+        text("\(Int(s.used.rounded()))%", 11, color, R, 47, .semibold, right: true)
+
+        let track = NSBezierPath(roundedRect: NSRect(x: L, y: 28, width: R - L, height: 8), xRadius: 4, yRadius: 4)
+        NSColor.labelColor.withAlphaComponent(0.12).setFill(); track.fill()
+        NSGraphicsContext.saveGraphicsState(); track.addClip()
+        color.setFill()
+        NSRect(x: L, y: 28, width: (R - L) * min(max(s.used / 100, 0), 1), height: 8).fill()
+        NSGraphicsContext.restoreGraphicsState()
+
+        text("Resets", 11, .secondaryLabelColor, L, 10)
+        text("\(clock.string(from: s.resetsAt)) \u{00b7} \(formatRemaining(s.resetsAt.timeIntervalSince(now)))", 11, .labelColor, R, 10, .medium, right: true)
+    }
+
+    func drawWeek() {
         let level = paceLevel(w, now: now), color = paceColor(level)
         let target = targetPercent(w, now: now), today = min(Int(target / 100 * 7), 6)
         let dim = NSColor.secondaryLabelColor, faint = NSColor.labelColor.withAlphaComponent(0.12)
@@ -119,7 +152,7 @@ final class WeekView: NSView {
 
 final class App:NSObject, NSApplicationDelegate {
     let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-    var weekly: Window?, error: String?, updated = Date()
+    var weekly: Window?, session: Window?, error: String?, updated = Date()
 
     func applicationDidFinishLaunching(_: Notification) {
         refresh()
@@ -140,6 +173,7 @@ final class App:NSObject, NSApplicationDelegate {
                 switch (status, usage) {
                 case (200, let u?):
                     self.weekly = toWindow(u.seven_day, length: 7 * 86400)
+                    self.session = toWindow(u.five_hour, length: 5 * 3600)
                     self.error = nil
                     self.updated = Date()
                 case (401, _): self.error = "Token expired — open Claude Code once"
@@ -160,7 +194,7 @@ final class App:NSObject, NSApplicationDelegate {
             item.button?.imagePosition = .imageOnly
             item.button?.title = ""
             let viewItem = NSMenuItem()
-            viewItem.view = WeekView(w, now: now)
+            viewItem.view = WeekView(w, session: session, now: now)
             menu.addItem(viewItem)
         } else {
             item.button?.image = nil

@@ -36,3 +36,10 @@ func leftToday(_ w: Window, now: Date) -> Double {
 func dailyBudget(_ w: Window, now: Date) -> Double {
     (100 - w.used) / max(w.resetsAt.timeIntervalSince(now) / 86400, 1)
 }
+
+// The session window is not paced — you don't ration five hours evenly, you just watch it drain.
+// 0 fine, 1 low, 2 nearly spent; bands on the displayed integer.
+func sessionLevel(_ used: Double) -> Int {
+    let u = used.rounded()
+    return u >= 90 ? 2 : u >= 75 ? 1 : 0
+}
